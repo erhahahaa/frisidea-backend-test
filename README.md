@@ -91,7 +91,44 @@ php artisan serve
 
 ### Authentication
 
-All product endpoints require JWT authentication. First, obtain a token:
+All product endpoints require JWT authentication. First, register or login to obtain a token:
+
+#### Register
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123",
+  "password_confirmation": "password123"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "message": "Registration successful",
+  "data": {
+    "token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+    "token_type": "bearer",
+    "expires_in": 3600,
+    "user": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    }
+  }
+}
+```
+
+**Validation Rules:**
+- `name`: required, string, max 255 characters
+- `email`: required, valid email, unique
+- `password`: required, minimum 8 characters, must match confirmation
 
 #### Login
 

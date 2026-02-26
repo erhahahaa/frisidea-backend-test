@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 // Authentication routes - Rate limited
 Route::middleware('throttle:api')->group(function () {
+    Route::post('/auth/register', [AuthController::class, 'register']);
     Route::post('/auth/login', [AuthController::class, 'login']);
 });
 
