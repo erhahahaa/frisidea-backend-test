@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Annotations;
+
 use OpenApi\Attributes as OA;
 
 #[OA\Info(

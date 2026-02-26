@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
- 
+
 class AuthController extends Controller
 {
     #[OA\Post(
@@ -39,7 +39,7 @@ class AuthController extends Controller
                         new OA\Property(
                             property: 'data',
                             type: 'object',
-                            ref: "#/components/schemas/UserSchema"
+                            ref: '#/components/schemas/UserSchema'
                         ),
                     ]
                 )
@@ -117,9 +117,9 @@ class AuthController extends Controller
                                 new OA\Property(property: 'token_type', type: 'string', example: 'bearer'),
                                 new OA\Property(property: 'expires_in', type: 'integer', example: 3600),
                                 new OA\Property(
-                                    property: 'user', 
+                                    property: 'user',
                                     type: 'object',
-                                    ref: "#/components/schemas/UserSchema"
+                                    ref: '#/components/schemas/UserSchema'
                                 ),
                             ],
                             type: 'object'
