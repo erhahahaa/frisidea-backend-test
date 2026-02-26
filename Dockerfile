@@ -1,16 +1,9 @@
 # ============================================================================
-# Stage 1: PHP Dependencies Builder (Composer)
+# Stage 1: Composer
 # ============================================================================
-FROM dunglas/frankenphp:latest AS composer-builder
+FROM composer:2 AS composer-builder
 
 WORKDIR /app
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    unzip \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY composer.json composer.lock ./
 
@@ -23,20 +16,17 @@ RUN composer install \
     --prefer-dist
 
 # ============================================================================
-# Stage 2: Development Image
+# Stage 2: Development
 # ============================================================================
-FROM dunglas/frankenphp:latest AS dev
+FROM dunglas/frankenphp:php8.4-alpine AS dev
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     curl \
-    wget \
-    git \
-    unzip \
-    netcat-traditional \
+    netcat-openbsd \
     tzdata \
-    && rm -rf /var/lib/apt/lists/*
+    git
 
 RUN install-php-extensions \
     pgsql \
@@ -52,13 +42,11 @@ RUN install-php-extensions \
     bcmath \
     json
 
-RUN groupadd -g 1000 frankenphp && \
-    useradd -m -u 1000 -g frankenphp -s /sbin/nologin frankenphp
+RUN addgroup -g 1000 frankenphp && \
+    adduser -D -u 1000 -G frankenphp -s /sbin/nologin frankenphp
 
 COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
-
 COPY --chown=frankenphp:frankenphp . .
-
 COPY --chown=root:root Caddyfile /app/Caddyfile
 
 RUN mkdir -p storage/framework/{sessions,views,cache} \
@@ -88,17 +76,16 @@ ENV APP_ENV=local \
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # ============================================================================
-# Stage 3: Production Image
+# Stage 3: Production
 # ============================================================================
-FROM dunglas/frankenphp:latest AS prod
+FROM dunglas/frankenphp:php8.4-alpine AS prod
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apk add --no-cache \
     curl \
-    netcat-traditional \
-    tzdata \
-    && rm -rf /var/lib/apt/lists/*
+    netcat-openbsd \
+    tzdata
 
 RUN install-php-extensions \
     pgsql \
@@ -114,13 +101,11 @@ RUN install-php-extensions \
     bcmath \
     json
 
-RUN groupadd -g 1000 frankenphp && \
-    useradd -m -u 1000 -g frankenphp -s /sbin/nologin frankenphp
+RUN addgroup -g 1000 frankenphp && \
+    adduser -D -u 1000 -G frankenphp -s /sbin/nologin frankenphp
 
 COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
-
 COPY --chown=frankenphp:frankenphp . .
-
 COPY --chown=root:root Caddyfile /app/Caddyfile
 
 RUN mkdir -p storage/framework/{sessions,views,cache} \
