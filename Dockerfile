@@ -49,15 +49,15 @@ COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 COPY --chown=frankenphp:frankenphp . .
 COPY --chown=root:root Caddyfile /app/Caddyfile
 
-RUN mkdir -p storage/framework/{sessions,views,cache} \
+RUN mkdir -p /app/.caddy/data \
+             /app/.caddy/config \
+             storage/framework/{sessions,views,cache} \
              storage/logs \
-             bootstrap/cache \
-             /app/.caddy/data \
-             /app/.caddy/config && \
+             bootstrap/cache && \
     chown -R frankenphp:frankenphp \
+        /app/.caddy \
         storage \
-        bootstrap/cache \
-        /app/.caddy && \
+        bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache
 
 COPY --chown=frankenphp:frankenphp entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -108,15 +108,15 @@ COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 COPY --chown=frankenphp:frankenphp . .
 COPY --chown=root:root Caddyfile /app/Caddyfile
 
-RUN mkdir -p storage/framework/{sessions,views,cache} \
+RUN mkdir -p /app/.caddy/data \
+             /app/.caddy/config \
+             storage/framework/{sessions,views,cache} \
              storage/logs \
-             bootstrap/cache \
-             /app/.caddy/data \
-             /app/.caddy/config && \
+             bootstrap/cache && \
     chown -R frankenphp:frankenphp \
+        /app/.caddy \
         storage \
-        bootstrap/cache \
-        /app/.caddy && \
+        bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache
 
 COPY --chown=frankenphp:frankenphp entrypoint.sh /usr/local/bin/entrypoint.sh
