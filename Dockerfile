@@ -38,13 +38,11 @@ WORKDIR /app
 
 # Install required system packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    # Essential tools
     curl \
     wget \
     git \
     unzip \
     netcat-traditional \
-    # Timezone support
     tzdata \
     && rm -rf /var/lib/apt/lists/*
 
@@ -73,6 +71,9 @@ COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 # Copy the entire Laravel application
 COPY --chown=frankenphp:frankenphp . .
 
+# Copy static Caddyfile (owned by root, readable by all — no runtime writes needed)
+COPY Caddyfile /app/Caddyfile
+
 # Set proper permissions for storage and bootstrap directories
 RUN mkdir -p storage bootstrap/cache && \
     chown -R frankenphp:frankenphp storage bootstrap/cache && \
@@ -89,17 +90,14 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 # Switch to non-root user
 USER frankenphp
 
-# Expose port 80
 EXPOSE 80
 
-# Set environment variables
 ENV APP_ENV=local \
     XDG_DATA_HOME=/app/.caddy/data \
     XDG_CONFIG_HOME=/app/.caddy/config \
     APP_DEBUG=true \
     FRANKENPHP_CONFIG="worker"
 
-# Entrypoint script handles app startup and migrations
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # ============================================================================
@@ -141,6 +139,9 @@ COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 # Copy the entire Laravel application
 COPY --chown=frankenphp:frankenphp . .
 
+# Copy static Caddyfile (owned by root, readable by all — no runtime writes needed)
+COPY Caddyfile /app/Caddyfile
+
 # Set proper permissions for storage and bootstrap directories
 RUN mkdir -p storage bootstrap/cache && \
     chown -R frankenphp:frankenphp storage bootstrap/cache && \
@@ -157,15 +158,12 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 # Switch to non-root user
 USER frankenphp
 
-# Expose port 80
 EXPOSE 80
 
-# Set environment variables (production)
 ENV APP_ENV=production \
     XDG_DATA_HOME=/app/.caddy/data \
     XDG_CONFIG_HOME=/app/.caddy/config \
     APP_DEBUG=false \
     FRANKENPHP_CONFIG="worker"
 
-# Entrypoint script handles app startup
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

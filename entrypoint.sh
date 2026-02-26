@@ -54,19 +54,4 @@ php artisan cache:clear 2>/dev/null || true
 echo "${GREEN}✓ Starting FrankenPHP server on port 80${NC}"
 echo "---"
 
-cat > /app/Caddyfile <<'CADDYEOF'
-{
-    skip_install_trust
-    admin off
-    storage file_system /app/.caddy/data
-}
-
-http://localhost:80 {
-    root * /app/public
-    file_server
-    encode zstd br gzip
-    php_server
-}
-CADDYEOF
-
 exec frankenphp run --config /app/Caddyfile
