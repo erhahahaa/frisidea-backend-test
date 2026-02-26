@@ -8,14 +8,20 @@ FROM dunglas/frankenphp:latest AS composer-builder
 
 WORKDIR /app
 
-# Copy composer files and vendor (already installed locally)
-COPY composer.json composer.lock ./
-COPY vendor ./vendor
+# Install composer binary
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Optimize autoloader for production
-RUN php -r "require 'vendor/autoload.php';" && \
-    find vendor -type f -name "*.php" -path "*/tests/*" -delete && \
-    find vendor -type f -name "*.md" -delete
+# Copy only composer files first (vendor is gitignored — install fresh)
+COPY composer.json composer.lock ./
+
+# Install production dependencies only
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-progress \
+    --no-scripts \
+    --optimize-autoloader \
+    --prefer-dist
 
 # ============================================================================
 # Stage 2: Development Image
