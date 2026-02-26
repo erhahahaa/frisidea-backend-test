@@ -9,21 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use OpenApi\Attributes as OA;
-
-#[OA\Info(
-    version: '1.0.0',
-    title: 'Frisidea Backend API',
-    description: 'REST API for Frisidea Backend Test with JWT Authentication'
-)]
-#[OA\Server(url: 'http://localhost:8000')]
-#[OA\SecurityScheme(
-    securityScheme: 'bearerAuth',
-    type: 'http',
-    name: 'Authorization',
-    in: 'header',
-    bearerFormat: 'JWT',
-    scheme: 'bearer'
-)]
+ 
 class AuthController extends Controller
 {
     #[OA\Post(
@@ -52,23 +38,8 @@ class AuthController extends Controller
                         new OA\Property(property: 'message', type: 'string', example: 'Registration successful'),
                         new OA\Property(
                             property: 'data',
-                            properties: [
-                                new OA\Property(property: 'token', type: 'string', example: 'eyJ0eXAiOiJKV1QiLCJhbGc...'),
-                                new OA\Property(property: 'token_type', type: 'string', example: 'bearer'),
-                                new OA\Property(property: 'expires_in', type: 'integer', example: 3600),
-                                new OA\Property(
-                                    property: 'user',
-                                    properties: [
-                                        new OA\Property(property: 'id', type: 'integer', example: 1),
-                                        new OA\Property(property: 'name', type: 'string', example: 'John Doe'),
-                                        new OA\Property(property: 'email', type: 'string', example: 'john@example.com'),
-                                        new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
-                                        new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
-                                    ],
-                                    type: 'object'
-                                ),
-                            ],
-                            type: 'object'
+                            type: 'object',
+                            ref: "#/components/schemas/UserSchema"
                         ),
                     ]
                 )
@@ -146,15 +117,9 @@ class AuthController extends Controller
                                 new OA\Property(property: 'token_type', type: 'string', example: 'bearer'),
                                 new OA\Property(property: 'expires_in', type: 'integer', example: 3600),
                                 new OA\Property(
-                                    property: 'user',
-                                    properties: [
-                                        new OA\Property(property: 'id', type: 'integer', example: 1),
-                                        new OA\Property(property: 'name', type: 'string', example: 'John Doe'),
-                                        new OA\Property(property: 'email', type: 'string', example: 'john@example.com'),
-                                        new OA\Property(property: 'created_at', type: 'string', format: 'date-time'),
-                                        new OA\Property(property: 'updated_at', type: 'string', format: 'date-time'),
-                                    ],
-                                    type: 'object'
+                                    property: 'user', 
+                                    type: 'object',
+                                    ref: "#/components/schemas/UserSchema"
                                 ),
                             ],
                             type: 'object'
