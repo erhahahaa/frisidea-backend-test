@@ -1,9 +1,12 @@
 {
     skip_install_trust
+    admin off
+    storage file_system /app/.caddy/data
 }
 
-:80 {
-    root /app/public
+http://localhost:80 {
+    root * /app/public
+    file_server
     encode zstd br gzip
     php_server
 }

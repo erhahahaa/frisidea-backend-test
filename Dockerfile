@@ -2,27 +2,7 @@
 # Supports both development and production builds
 
 # ============================================================================
-# Stage 1: Frontend Builder (Node.js - Vite Assets Compilation)
-# ============================================================================
-FROM node:20-alpine AS frontend-builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package.json package-lock.json ./
-
-# Install all dependencies (including dev for Vite build)
-RUN npm ci
-
-# Copy source files for Vite
-COPY resources/ ./resources/
-COPY vite.config.js ./
-
-# Build frontend assets
-RUN npm run build
-
-# ============================================================================
-# Stage 2: PHP Dependencies Builder (Composer)
+# Stage 1: PHP Dependencies Builder (Composer)
 # ============================================================================
 FROM dunglas/frankenphp:latest AS composer-builder
 
@@ -38,7 +18,7 @@ RUN php -r "require 'vendor/autoload.php';" && \
     find vendor -type f -name "*.md" -delete
 
 # ============================================================================
-# Stage 3: Development Image
+# Stage 2: Development Image
 # ============================================================================
 FROM dunglas/frankenphp:latest AS dev
 
@@ -78,9 +58,6 @@ RUN groupadd -g 1000 frankenphp && \
 # Copy composer vendor from builder stage
 COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 
-# Copy frontend build output
-COPY --from=frontend-builder --chown=frankenphp:frankenphp /app/public/build ./public/build
-
 # Copy the entire Laravel application
 COPY --chown=frankenphp:frankenphp . .
 
@@ -88,6 +65,10 @@ COPY --chown=frankenphp:frankenphp . .
 RUN mkdir -p storage bootstrap/cache && \
     chown -R frankenphp:frankenphp storage bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache
+
+# Create Caddy data/config dirs under /app where we have ownership
+RUN mkdir -p /app/.caddy/data /app/.caddy/config && \
+    chown -R frankenphp:frankenphp /app/.caddy
 
 # Copy entrypoint script
 COPY --chown=frankenphp:frankenphp entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -101,6 +82,8 @@ EXPOSE 80
 
 # Set environment variables
 ENV APP_ENV=local \
+    XDG_DATA_HOME=/app/.caddy/data \
+    XDG_CONFIG_HOME=/app/.caddy/config \
     APP_DEBUG=true \
     FRANKENPHP_CONFIG="worker"
 
@@ -108,7 +91,7 @@ ENV APP_ENV=local \
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # ============================================================================
-# Stage 4: Production Image (Optimized)
+# Stage 3: Production Image (Optimized)
 # ============================================================================
 FROM dunglas/frankenphp:latest AS prod
 
@@ -143,9 +126,6 @@ RUN groupadd -g 1000 frankenphp && \
 # Copy composer vendor from builder (production dependencies only)
 COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 
-# Copy frontend build output
-COPY --from=frontend-builder --chown=frankenphp:frankenphp /app/public/build ./public/build
-
 # Copy the entire Laravel application
 COPY --chown=frankenphp:frankenphp . .
 
@@ -153,6 +133,10 @@ COPY --chown=frankenphp:frankenphp . .
 RUN mkdir -p storage bootstrap/cache && \
     chown -R frankenphp:frankenphp storage bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache
+
+# Create Caddy data/config dirs under /app where we have ownership
+RUN mkdir -p /app/.caddy/data /app/.caddy/config && \
+    chown -R frankenphp:frankenphp /app/.caddy
 
 # Copy entrypoint script
 COPY --chown=frankenphp:frankenphp entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -166,6 +150,8 @@ EXPOSE 80
 
 # Set environment variables (production)
 ENV APP_ENV=production \
+    XDG_DATA_HOME=/app/.caddy/data \
+    XDG_CONFIG_HOME=/app/.caddy/config \
     APP_DEBUG=false \
     FRANKENPHP_CONFIG="worker"
 

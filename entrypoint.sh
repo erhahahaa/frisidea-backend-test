@@ -12,7 +12,6 @@ NC='\033[0m' # No Color
 # ============================================================================
 echo "${YELLOW}Waiting for PostgreSQL at ${DB_HOST}:${DB_PORT}...${NC}"
 
-# Use netcat to check if port is open
 timeout=60
 elapsed=0
 
@@ -29,11 +28,10 @@ done
 echo "${GREEN}✓ PostgreSQL is available${NC}"
 
 # ============================================================================
-# Clear configuration and cache
+# Clear config cache (safe before migrations - does not touch DB)
 # ============================================================================
-echo "${YELLOW}Clearing caches...${NC}"
+echo "${YELLOW}Clearing config cache...${NC}"
 php artisan config:clear 2>/dev/null || true
-php artisan cache:clear 2>/dev/null || true
 
 # ============================================================================
 # Run database migrations
@@ -41,30 +39,34 @@ php artisan cache:clear 2>/dev/null || true
 echo "${YELLOW}Running database migrations...${NC}"
 php artisan migrate --force 2>&1 || {
     echo "${YELLOW}⚠ Migration warning - check logs above for details${NC}"
-    # Don't exit, let the app continue to start
 }
-echo "${GREEN}✓ Migrations processing completed${NC}"
+echo "${GREEN}✓ Migrations completed${NC}"
+
+# ============================================================================
+# Clear application cache (safe now - cache table exists after migrations)
+# ============================================================================
+echo "${YELLOW}Clearing application cache...${NC}"
+php artisan cache:clear 2>/dev/null || true
 
 # ============================================================================
 # Start FrankenPHP
 # ============================================================================
 echo "${GREEN}✓ Starting FrankenPHP server on port 80${NC}"
-echo "${YELLOW}---${NC}"
+echo "---"
 
-# Create Caddyfile for development (simple HTTP only)
 cat > /app/Caddyfile <<'CADDYEOF'
 {
     skip_install_trust
     admin off
+    storage file_system /app/.caddy/data
 }
 
 http://localhost:80 {
-    root /app/public
+    root * /app/public
     file_server
     encode zstd br gzip
     php_server
 }
 CADDYEOF
 
-# Start FrankenPHP with Caddyfile
 exec frankenphp run --config /app/Caddyfile
