@@ -14,6 +14,7 @@ A RESTful API for product management built with Laravel 12, featuring JWT authen
 - ✅ **Global Exception Handling** - Consistent JSON error responses
 - ✅ **Comprehensive Testing** - Full test coverage with Pest PHP
 - ✅ **Docker Support** - Containerized with FrankenPHP + PostgreSQL
+- ✅ **Swagger/OpenAPI Documentation** - Interactive API documentation with Swagger UI
 - ✅ **API Documentation** - Postman collection included
 
 ## Tech Stack
@@ -27,6 +28,7 @@ A RESTful API for product management built with Laravel 12, featuring JWT authen
 | Pest PHP | 4.x | Testing Framework |
 | FrankenPHP | Latest | Application Server |
 | Docker | Latest | Containerization |
+| Swagger/OpenAPI | 3.0 | API Documentation |
 
 ## Quick Start
 
@@ -83,6 +85,27 @@ php artisan serve
 ```
 
 ## API Documentation
+
+### Interactive Documentation (Swagger UI)
+
+The API comes with interactive Swagger/OpenAPI documentation that allows you to explore and test all endpoints directly from your browser.
+
+**Access Swagger UI:**
+- **Root URL**: `http://localhost:8000/` (redirects to Swagger)
+- **Direct URL**: `http://localhost:8000/api/documentation`
+
+**Features:**
+- Interactive API explorer with "Try it out" functionality
+- Complete request/response schemas
+- JWT Bearer token authentication support
+- Auto-generated from code annotations (always up-to-date)
+
+**How to use:**
+1. Open Swagger UI in your browser
+2. Click "Authorize" button
+3. Enter your JWT token in the format: `Bearer your-token-here`
+4. Click "Authorize" to save
+5. Now you can test protected endpoints directly from the UI
 
 ### Base URL
 
