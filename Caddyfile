@@ -1,9 +1,6 @@
 {
     skip_install_trust
     admin off
-    storage file_system {
-        root /app/.caddy/data
-    }
 }
 
 http://localhost:80 {

@@ -49,13 +49,10 @@ COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 COPY --chown=frankenphp:frankenphp . .
 COPY --chown=root:root Caddyfile /app/Caddyfile
 
-RUN mkdir -p /app/.caddy/data \
-             /app/.caddy/config \
-             storage/framework/{sessions,views,cache} \
+RUN mkdir -p storage/framework/{sessions,views,cache} \
              storage/logs \
              bootstrap/cache && \
     chown -R frankenphp:frankenphp \
-        /app/.caddy \
         storage \
         bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache
@@ -69,9 +66,7 @@ EXPOSE 80
 
 ENV APP_ENV=local \
     APP_DEBUG=true \
-    FRANKENPHP_CONFIG="worker" \
-    XDG_DATA_HOME=/app/.caddy/data \
-    XDG_CONFIG_HOME=/app/.caddy/config
+    FRANKENPHP_CONFIG="worker"
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
@@ -108,13 +103,10 @@ COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 COPY --chown=frankenphp:frankenphp . .
 COPY --chown=root:root Caddyfile /app/Caddyfile
 
-RUN mkdir -p /app/.caddy/data \
-             /app/.caddy/config \
-             storage/framework/{sessions,views,cache} \
+RUN mkdir -p storage/framework/{sessions,views,cache} \
              storage/logs \
              bootstrap/cache && \
     chown -R frankenphp:frankenphp \
-        /app/.caddy \
         storage \
         bootstrap/cache && \
     chmod -R 775 storage bootstrap/cache
@@ -128,8 +120,6 @@ EXPOSE 80
 
 ENV APP_ENV=production \
     APP_DEBUG=false \
-    FRANKENPHP_CONFIG="worker" \
-    XDG_DATA_HOME=/app/.caddy/data \
-    XDG_CONFIG_HOME=/app/.caddy/config
+    FRANKENPHP_CONFIG="worker"
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
