@@ -1,6 +1,3 @@
-# Multi-stage Dockerfile for Laravel with FrankenPHP
-# Supports both development and production builds
-
 # ============================================================================
 # Stage 1: PHP Dependencies Builder (Composer)
 # ============================================================================
@@ -8,19 +5,15 @@ FROM dunglas/frankenphp:latest AS composer-builder
 
 WORKDIR /app
 
-# Install required tools for Composer to download/extract packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Install composer binary
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy only composer files first (vendor is gitignored — install fresh)
 COPY composer.json composer.lock ./
 
-# Install production dependencies only
 RUN composer install \
     --no-dev \
     --no-interaction \
@@ -36,7 +29,6 @@ FROM dunglas/frankenphp:latest AS dev
 
 WORKDIR /app
 
-# Install required system packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     wget \
@@ -46,7 +38,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions using the official FrankenPHP image installer
 RUN install-php-extensions \
     pgsql \
     pdo_pgsql \
@@ -61,60 +52,54 @@ RUN install-php-extensions \
     bcmath \
     json
 
-# Create non-root user for running FrankenPHP
 RUN groupadd -g 1000 frankenphp && \
     useradd -m -u 1000 -g frankenphp -s /sbin/nologin frankenphp
 
-# Copy composer vendor from builder stage
 COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 
-# Copy the entire Laravel application
 COPY --chown=frankenphp:frankenphp . .
 
-# Copy static Caddyfile (owned by root, readable by all — no runtime writes needed)
-COPY Caddyfile /app/Caddyfile
+COPY --chown=root:root Caddyfile /app/Caddyfile
 
-# Set proper permissions for storage and bootstrap directories
-RUN mkdir -p storage bootstrap/cache && \
-    chown -R frankenphp:frankenphp storage bootstrap/cache && \
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+             storage/logs \
+             bootstrap/cache \
+             /app/.caddy/data \
+             /app/.caddy/config && \
+    chown -R frankenphp:frankenphp \
+        storage \
+        bootstrap/cache \
+        /app/.caddy && \
     chmod -R 775 storage bootstrap/cache
 
-# Create Caddy data/config dirs under /app where we have ownership
-RUN mkdir -p /app/.caddy/data /app/.caddy/config && \
-    chown -R frankenphp:frankenphp /app/.caddy
-
-# Copy entrypoint script
 COPY --chown=frankenphp:frankenphp entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Switch to non-root user
 USER frankenphp
 
 EXPOSE 80
 
 ENV APP_ENV=local \
-    XDG_DATA_HOME=/app/.caddy/data \
-    XDG_CONFIG_HOME=/app/.caddy/config \
     APP_DEBUG=true \
-    FRANKENPHP_CONFIG="worker"
+    FRANKENPHP_CONFIG="worker" \
+    XDG_DATA_HOME=/app/.caddy/data \
+    XDG_CONFIG_HOME=/app/.caddy/config
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # ============================================================================
-# Stage 3: Production Image (Optimized)
+# Stage 3: Production Image
 # ============================================================================
 FROM dunglas/frankenphp:latest AS prod
 
 WORKDIR /app
 
-# Install only essential system packages (no dev tools)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     netcat-traditional \
     tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions (production-optimized)
 RUN install-php-extensions \
     pgsql \
     pdo_pgsql \
@@ -129,41 +114,37 @@ RUN install-php-extensions \
     bcmath \
     json
 
-# Create non-root user
 RUN groupadd -g 1000 frankenphp && \
     useradd -m -u 1000 -g frankenphp -s /sbin/nologin frankenphp
 
-# Copy composer vendor from builder (production dependencies only)
 COPY --from=composer-builder --chown=frankenphp:frankenphp /app/vendor ./vendor
 
-# Copy the entire Laravel application
 COPY --chown=frankenphp:frankenphp . .
 
-# Copy static Caddyfile (owned by root, readable by all — no runtime writes needed)
-COPY Caddyfile /app/Caddyfile
+COPY --chown=root:root Caddyfile /app/Caddyfile
 
-# Set proper permissions for storage and bootstrap directories
-RUN mkdir -p storage bootstrap/cache && \
-    chown -R frankenphp:frankenphp storage bootstrap/cache && \
+RUN mkdir -p storage/framework/{sessions,views,cache} \
+             storage/logs \
+             bootstrap/cache \
+             /app/.caddy/data \
+             /app/.caddy/config && \
+    chown -R frankenphp:frankenphp \
+        storage \
+        bootstrap/cache \
+        /app/.caddy && \
     chmod -R 775 storage bootstrap/cache
 
-# Create Caddy data/config dirs under /app where we have ownership
-RUN mkdir -p /app/.caddy/data /app/.caddy/config && \
-    chown -R frankenphp:frankenphp /app/.caddy
-
-# Copy entrypoint script
 COPY --chown=frankenphp:frankenphp entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-# Switch to non-root user
 USER frankenphp
 
 EXPOSE 80
 
 ENV APP_ENV=production \
-    XDG_DATA_HOME=/app/.caddy/data \
-    XDG_CONFIG_HOME=/app/.caddy/config \
     APP_DEBUG=false \
-    FRANKENPHP_CONFIG="worker"
+    FRANKENPHP_CONFIG="worker" \
+    XDG_DATA_HOME=/app/.caddy/data \
+    XDG_CONFIG_HOME=/app/.caddy/config
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
