@@ -1,0 +1,13 @@
+# Development-specific overrides for Docker Compose
+# This file is automatically loaded by Docker Compose and overrides settings in compose.yaml
+
+services:
+  laravel:
+    # Development environment variables override
+    environment:
+      APP_ENV: local
+      APP_DEBUG: 'true'
+      LOG_LEVEL: debug
+
+    # Additional development settings can be added here
+    # Example: for xdebug, redis, mailhog, etc.
