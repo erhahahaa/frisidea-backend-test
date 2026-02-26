@@ -51,19 +51,20 @@ echo "${GREEN}✓ Migrations processing completed${NC}"
 echo "${GREEN}✓ Starting FrankenPHP server on port 80${NC}"
 echo "${YELLOW}---${NC}"
 
-# Create Caddyfile
-mkdir -p /app/Caddyfile.d
-cat > /app/Caddyfile <<'EOF'
+# Create Caddyfile for development (simple HTTP only)
+cat > /app/Caddyfile <<'CADDYEOF'
 {
     skip_install_trust
+    admin off
 }
 
-:80 {
+http://localhost:80 {
     root /app/public
+    file_server
     encode zstd br gzip
     php_server
 }
-EOF
+CADDYEOF
 
 # Start FrankenPHP with Caddyfile
 exec frankenphp run --config /app/Caddyfile
