@@ -57,9 +57,6 @@ docker-compose exec laravel php artisan migrate:fresh --seed
 # Install PHP dependencies
 composer install
 
-# Install Node dependencies
-npm install
-
 # Copy environment file
 cp .env.example .env
 

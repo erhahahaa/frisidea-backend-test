@@ -55,7 +55,6 @@ services:
         volumes:
             - '.:/app'
             - '/app/vendor'
-            - '/app/node_modules'
             - 'sail-storage:/app/storage'
             - 'sail-bootstrap:/app/bootstrap/cache'
         depends_on:
