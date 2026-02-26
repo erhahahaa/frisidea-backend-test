@@ -72,6 +72,16 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
+        // Handle Rate Limit Exception (429)
+        $exceptions->render(function (TooManyRequestsHttpException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Too many requests. Please try again later.',
+                ], 429);
+            }
+        });
+
         // Handle Generic Exceptions (500)
         $exceptions->render(function (\Throwable $e, Request $request) {
             if ($request->is('api/*')) {
