@@ -8,6 +8,12 @@ FROM dunglas/frankenphp:latest AS composer-builder
 
 WORKDIR /app
 
+# Install required tools for Composer to download/extract packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    unzip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install composer binary
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
