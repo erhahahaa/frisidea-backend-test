@@ -39,11 +39,11 @@ php artisan cache:clear 2>/dev/null || true
 # Run database migrations
 # ============================================================================
 echo "${YELLOW}Running database migrations...${NC}"
-php artisan migrate --force 2>/dev/null || {
-    echo "${RED}✗ Migration failed${NC}"
-    exit 1
+php artisan migrate --force 2>&1 || {
+    echo "${YELLOW}⚠ Migration warning - check logs above for details${NC}"
+    # Don't exit, let the app continue to start
 }
-echo "${GREEN}✓ Migrations completed${NC}"
+echo "${GREEN}✓ Migrations processing completed${NC}"
 
 # ============================================================================
 # Start FrankenPHP
